@@ -1,7 +1,15 @@
 import json
 from os import path
 from .globals import globals
-from .redis import redis
+
+if not globals.get("testrun", False):
+    from .redis import redis
+else:
+    class MockRedis:
+        def get(self, name): return None
+        def set(self, name, value, nx=False, ex=None): return True
+        def delete(self, name): pass
+    redis = MockRedis()
 
 
 # The Env class uses both a flat file and Redis to store values
@@ -27,7 +35,7 @@ class Env:
             self.value = value_in_file
         else:
             self.value = default
-        redis.set(name=self._name, value=json.dumps(self.value))
+        # redis.set(name=self._name, value=json.dumps(self.value)) # Handled by setter
 
     def _get_values_from_file(self):
         ret = {}
@@ -66,6 +74,12 @@ class Env:
 
     @property
     def value(self):
+        # v = redis.get(name=self._name)
+        # In testrun, we rely on file or memory.
+        # But for simplicity, let's just use the file logic or simple pass-through if redis is mocked.
+        # The original code preferred Redis.
+        # If redis is mocked to return None, we fall back to file?
+        # Original code:
         v = redis.get(name=self._name)
         result = None
         if v is not None:
@@ -73,6 +87,10 @@ class Env:
                 result = json.loads(v)
             except json.JSONDecodeError:
                 pass
+        
+        if result is None:
+             # Fallback to file if redis returns None (which MockRedis does)
+             return self._get_value_from_file()
         return result
 
     @value.setter

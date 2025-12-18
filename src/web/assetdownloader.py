@@ -10,7 +10,8 @@ from threading import Timer
 from .env import env
 from .globals import globals
 
-if not globals["testrun"]:
+print(f"DEBUG: assetdownloader.py importing. globals={globals}")
+if not globals.get("testrun", False):
     from .redis import redis
 
 

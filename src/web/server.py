@@ -14,6 +14,7 @@ if __name__ != "__main__":
     from .redis import redis
 else:
     globals["testrun"] = True
+    print(f"DEBUG: server.py set testrun=True. globals={globals}")
     path = Path(__file__)
     globals["app_path"] = path.parent.parent.parent.absolute()
 
@@ -104,8 +105,9 @@ if __name__ != "__main__":
     else:
         print(f"worker {lock} is dealing with release IDs")
 else:
-    globals["subsurfacesync"].setup()
-    globals["subsurfacesync"].sync()
+    # globals["subsurfacesync"].setup()
+    # globals["subsurfacesync"].sync()
+    pass
 
 
 @app.context_processor
